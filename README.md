@@ -16,14 +16,26 @@
 - ⚡ **Performance**:
   - Fast inference via **Groq API** (LLaMA 3 / Mixtral)
   - Embedded caching via **ChromaDB**
+  - Reuse of **past RAG sessions** without re-uploading
   - Session memory and vectorstore reuse
-  - Fallback to default LLM chat (no input required)
+  - Fallback to default LLM chat (if no document used)
 
 - 🛠️ Modular, clean code using:
   - `LangChain` + `Chroma`
   - `HuggingFace` Embeddings
   - `Streamlit` UI
   - `Python` standard tooling
+
+---
+
+## 🧠 Intelligent Document Handling
+
+> You can chat even **without uploading anything**.
+
+✅ The app supports:
+- **Reusing previously embedded documents** via the sidebar dropdown  
+- **Default LLM fallback** if no document is selected at all  
+- No need to re-upload — RAGnition remembers your documents (`ChromaDB` + metadata caching)
 
 ---
 
@@ -125,17 +137,6 @@ Then open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ---
 
-## 🧠 Default LLM Mode (No File Needed)
-
-RAGnition supports chatting **even without uploading a document**.
-
-If no file or doc ID is selected, the system uses Groq’s LLM directly without retrieval augmentation.
-
----
-
-
-
 ## 🤝 Contribute
 
 PRs and feedback are welcome! Fork this repo, star it ⭐, and build something epic with it.
-
