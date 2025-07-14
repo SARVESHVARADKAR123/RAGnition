@@ -1,0 +1,32 @@
+# Core framework
+langchain
+
+# LLM provider (Groq)
+langchain-groq
+
+# Vector database
+chromadb
+
+# UI
+streamlit
+
+# Embeddings
+sentence-transformers
+
+# PDF parsing
+pdfplumber
+
+# OCR for image
+pytesseract
+opencv-python
+pillow
+
+# YouTube transcripts
+youtube-transcript-api
+
+# Web scraping
+beautifulsoup4
+requests
+
+# Optional (dev experience, logging, tracing)
+tqdm

@@ -1,0 +1,41 @@
+# === Python cache ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.egg
+*.log
+
+# === Virtual environments ===
+venv/
+ENV/
+env/
+.venv/
+
+# === IDEs ===
+.vscode/
+.idea/
+
+# === Environment ===
+.env
+
+# === OS/System ===
+.DS_Store
+Thumbs.db
+
+# === LangChain / Chroma DB ===
+chroma_db/
+meta_db/
+
+# === Notebook checkpoints ===
+.ipynb_checkpoints/
+
+# === Dependency lock ===
+poetry.lock
+Pipfile.lock
+
+# === Others ===
+*.bak
+*.tmp
