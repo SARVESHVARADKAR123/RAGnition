@@ -1,148 +1,142 @@
-🧠 RAGnition V1 — Multimodal RAG System with LangChain + Groq
-RAGnition V1 is a production-ready multimodal Retrieval-Augmented Generation (RAG) system that allows users to chat with an AI using uploaded documents (PDFs, images), online content (YouTube videos, URLs), or real-time web search.
+# 🧠 RAGnition — Multimodal RAG System using LangChain + Groq
 
-Powered by:
+**RAGnition** is an end-to-end **multimodal RAG (Retrieval-Augmented Generation)** system that allows users to chat with AI using their uploaded files (PDFs, images), online content (YouTube videos, URLs), or search results. Built with LangChain, ChromaDB, Groq’s LLaMA/Mixtral LLMs, and a clean Streamlit interface.
 
-💨 Groq's blazing-fast LLaMA/Mixtral models
+---
 
-🧠 LangChain and ChromaDB for document understanding
+## 🚀 Features
 
-💻 Streamlit for a clean chat UI
+- 🧾 **Input Sources**:
+  - 📄 PDFs
+  - 🖼️ Images (OCR)
+  - 📺 YouTube videos (transcripts)
+  - 🌐 Web URLs
+  - 🔍 DuckDuckGo Search results
 
-🔍 LangSmith for full tracing and debugging
+- ⚡ **Performance**:
+  - Fast inference via **Groq API** (LLaMA 3 / Mixtral)
+  - Embedded caching via **ChromaDB**
+  - Reuse of **past RAG sessions** without re-uploading
+  - Session memory and vectorstore reuse
+  - Fallback to default LLM chat (if no document used)
 
-🚀 Features (V1 Highlights)
-🧾 Multimodal Inputs:
+- 🛠️ Modular, clean code using:
+  - `LangChain` + `Chroma`
+  - `HuggingFace` Embeddings
+  - `Streamlit` UI
+  - `Python` standard tooling
 
-📄 PDF documents
+---
 
-🖼️ Images (via OCR)
+## 🧠 Intelligent Document Handling
 
-📺 YouTube video transcripts
+> You can chat even **without uploading anything**.
 
-🌐 Webpage scraping
+✅ The app supports:
+- **Reusing previously embedded documents** via the sidebar dropdown  
+- **Default LLM fallback** if no document is selected at all  
+- No need to re-upload — RAGnition remembers your documents (`ChromaDB` + metadata caching)
 
-🔍 DuckDuckGo Search results
+---
 
-🔁 Smart Document Memory:
+## 📁 Directory Structure
 
-Cached via ChromaDB vectorstore
-
-Auto-reuse of previously uploaded content
-
-Fallback to LLM-only if no doc selected
-
-⚡ Powered by Groq:
-
-Uses meta-llama/llama-4-scout-17b-16e-instruct
-
-100x token throughput vs standard LLMs
-
-🧠 LangSmith Tracing (Optional):
-
-Traced inputs, loaders, LLM outputs
-
-Easy debugging and pipeline visibility
-
-📁 Directory Structure
-bash
-Copy
-Edit
+```
 RAGnition/
 ├── main.py                   # Streamlit UI
-├── rag_pipeline.py           # RAG chain logic
-├── groq_llm.py               # Groq LLM init (with tracing)
-├── vector_store.py           # ChromaDB storage/reuse
+├── rag_pipeline.py           # RAG logic (LLM + retriever)
+├── vector_store.py           # Vectorstore caching, metadata
+├── groq_llm.py               # Groq LLM loader
 │
-├── loaders/                  # Modular input extractors
+├── loaders/                  # Input processors
 │   ├── pdf_loader.py
 │   ├── image_ocr.py
 │   ├── youtube_loader.py
 │   ├── web_scraper.py
 │
-├── utils/                    # Extras (session, persistence)
-│   └── persistence.py
+├── chroma_db/                # Persisted vectorstores
+├── meta_db/                  # Saved doc metadata
 │
-├── chroma_db/                # Local vectorstores
-├── meta_db/                  # Document metadata
-│
-├── .env                      # Keys (Groq, LangSmith)
+├── .env                      # (Your Groq API Key)
 ├── .gitignore
 ├── requirements.txt
 └── README.md
-🧪 Installation
-1. Clone and Set Up Environment
-bash
-Copy
-Edit
+```
+
+---
+
+## 🧪 Installation
+
+### 1. Clone the Repo
+
+```bash
 git clone https://github.com/SARVESHVARADKAR123/RAGnition.git
 cd RAGnition
+```
+
+### 2. Create a Virtual Environment
+
+```bash
 python -m venv venv
+# Activate
 source venv/bin/activate        # macOS/Linux
 venv\Scripts\activate           # Windows
-2. Install Dependencies
-bash
-Copy
-Edit
+```
+
+### 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
-🔐 Environment Configuration
-Create a .env file:
+```
 
-env
-Copy
-Edit
-GROQ_API_KEY=your_groq_key_here
-LANGSMITH_TRACING=true
-LANGSMITH_API_KEY=your_langsmith_key
-LANGSMITH_PROJECT=RAGnition
-LANGSMITH_ENDPOINT=https://api.smith.langchain.com
-▶️ Run the App
-bash
-Copy
-Edit
+---
+
+## 🔐 API Key Setup
+
+Create a `.env` file in the root directory:
+
+```
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+You can get your key from [https://console.groq.com](https://console.groq.com)
+
+---
+
+## ▶️ Running the App
+
+```bash
 streamlit run main.py
-Then visit: http://localhost:8501
+```
 
-✨ How It Works
-Choose an input (PDF, Image, URL, etc.)
+Then open [http://localhost:8501](http://localhost:8501) in your browser.
 
-Text is extracted and embedded using HuggingFace + ChromaDB
+---
 
-A Groq LLM retrieves top-relevant chunks and answers your query
+## ✨ How It Works
 
-Fallback to direct LLM response if no doc is used
+1. **Upload** or **select** a file / source (or skip to chat freely)
+2. Text is extracted using appropriate loaders (PDF, OCR, transcript, scraper)
+3. Embeddings are generated using `HuggingFace` models
+4. Text chunks are stored in a **ChromaDB** vectorstore
+5. On query, top chunks are retrieved and passed to a **Groq-hosted LLM**
+6. Results are displayed with caching and session memory
 
-📊 Tracing with LangSmith (Built-in)
-Every pipeline step is traced via @traceable:
+---
 
-Document loading
+## 🧰 Tools Used
 
-Embedding and vectorstore
+| Tool         | Purpose                           |
+|--------------|-----------------------------------|
+| LangChain    | RAG chain, retrievers             |
+| ChromaDB     | Embedding + vectorstore           |
+| Groq         | LLM inference (LLaMA/Mixtral)     |
+| HuggingFace  | Embedding model                   |
+| Streamlit    | UI / front-end                    |
+| OCR / Scraper| Image & Web processing            |
 
-Retrieval and LLM output
+---
 
-Displayed in LangSmith
+## 🤝 Contribute
 
-✅ No manual config required beyond .env
-
-🧰 Tech Stack
-Tool	Purpose
-LangChain	RAG logic, retrievers
-ChromaDB	Vectorstore + chunk storage
-HuggingFace	Embedding model
-Groq	LLM inference (LLaMA/Mixtral)
-Streamlit	Frontend UI
-LangSmith	End-to-end observability
-
-📌 Version Info
-yaml
-Copy
-Edit
-🧠 RAGnition Version: v1.0.0
-🔁 Multimodal: Yes
-⚡ Backend: Groq (LLM4)
-🛠️ Framework: LangChain
-🎯 Tracing: LangSmith enabled
-🤝 Contributing
-Have ideas, suggestions, or bugs?
-Fork this repo, submit a PR, or reach out!
+PRs and feedback are welcome! Fork this repo, star it ⭐, and build something epic with it.
