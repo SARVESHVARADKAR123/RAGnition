@@ -1,13 +1,12 @@
+import os
 from vector_store import embed_and_store, load_vectorstore
 from groq_llm import get_groq_llm
 from langchain.prompts import PromptTemplate
-from langchain.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableMap, RunnableLambda, RunnablePassthrough
-from langchain.callbacks.tracers.langchain import LangChainTracer
-
-
-# ✅ LangSmith Tracing
-tracer = LangChainTracer()
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
+from langsmith.run_helpers import traceable  # ✅ Recommended
+from dotenv import load_dotenv
+load_dotenv()
 
 # ✅ Custom PromptTemplate for RAG
 RAG_PROMPT = PromptTemplate.from_template("""
@@ -23,45 +22,42 @@ Question:
 Answer:
 """)
 
+def extract_clean_response(response) -> str:
+    """
+    Extract plain string response from LLM/chain output, safely.
+    """
+    if hasattr(response, "content"):
+        return response.content.strip()
+    return str(response).strip()
 
+# ✅ Automatically traced pipeline using LangSmith
+@traceable(name="RAGnition RAG Pipeline")
 def run_rag_pipeline(user_query: str, source_text: str = None, doc_id: str = None) -> str:
     """
-    Upgraded V1 RAG pipeline using LangChain Runnables, PromptTemplate, and StrOutputParser.
-
-    Args:
-        user_query (str): User's question
-        source_text (str, optional): Full source text
-        doc_id (str, optional): Document ID to fetch vectorstore
-
-    Returns:
-        str: LLM response
+    V1 RAG pipeline using LangChain Runnables, PromptTemplate, and StrOutputParser.
+    Traced to LangSmith. Always returns plain string.
     """
-
     llm = get_groq_llm()
     output_parser = StrOutputParser()
 
-    # ✅ If doc_id is provided, try vector-based retrieval
+    # 🧠 RAG path
     if doc_id:
         vectorstore = load_vectorstore(doc_id)
 
-        # If vectorstore doesn't exist, embed and store
         if not vectorstore:
             if not source_text:
                 print("⚠️ No source text. Falling back to direct LLM.")
-                return llm.invoke(user_query, config={"callbacks": [tracer]})
+                raw = llm.invoke(user_query)
+                return extract_clean_response(raw)
 
             try:
                 print(f"📦 Embedding new vectorstore for doc_id: {doc_id}")
                 vectorstore = embed_and_store(text=source_text, doc_id=doc_id)
             except Exception as e:
                 print(f"❌ Failed to embed vectorstore: {e}")
-                return llm.invoke(user_query, config={"callbacks": [tracer]})
+                raw = llm.invoke(user_query)
+                return extract_clean_response(raw)
 
-        if not vectorstore:
-            print("❌ Still no vectorstore. Using direct LLM.")
-            return llm.invoke(user_query, config={"callbacks": [tracer]})
-
-        # ✅ Build RAG chain using Runnable components
         retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
         rag_chain = (
@@ -74,8 +70,10 @@ def run_rag_pipeline(user_query: str, source_text: str = None, doc_id: str = Non
             | output_parser
         )
 
-        return rag_chain.invoke(user_query, config={"callbacks": [tracer]})
+        raw = rag_chain.invoke(user_query)
+        return extract_clean_response(raw)
 
-    # ✅ Fallback: Direct LLM chat
+    # 💬 Fallback: Direct LLM
     print("ℹ️ No doc ID provided. Using pure LLM chat.")
-    return llm.invoke(user_query, config={"callbacks": [tracer]})
+    raw = llm.invoke(user_query)
+    return extract_clean_response(raw)

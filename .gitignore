@@ -19,6 +19,9 @@ meta_db/
 # VS Code files
 .vscode/
 
+storage/
+utils/
+
 # OS metadata
 .DS_Store
 Thumbs.db

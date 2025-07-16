@@ -1,8 +1,11 @@
 import pdfplumber
+from langsmith.run_helpers import traceable  # ✅ Enable tracing
 
+@traceable(name="Extract PDF Text")
 def extract_text_from_pdf(file_obj):
     """
-    Extracts text from a PDF file object.
+    Extracts text from a PDF file object using pdfplumber.
+    Traced in LangSmith as 'Extract PDF Text'.
     """
     text = ""
     with pdfplumber.open(file_obj) as pdf:

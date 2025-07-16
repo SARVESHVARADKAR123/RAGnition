@@ -6,12 +6,19 @@ from loaders.web_scraper import scrape_text_from_urls, get_duckduckgo_search_con
 from rag_pipeline import run_rag_pipeline
 from vector_store import get_doc_id, load_all_doc_metadata
 
+# NEW: persistence utilities
+from utils.persistence import load_chat_history, save_chat_history, clear_chat_history
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # --- PAGE SETUP ---
-st.set_page_config(page_title="MultiRAG MVP", layout="centered")
-st.title("📚🧠 RAGnition 🧠📚")
+st.set_page_config(page_title="MultiRAG V1", layout="centered")
+st.title("📚🧠 RAGnition V1 — Multimodal RAG System 🧠📚")
 st.markdown("Upload content or select a previous doc — or just chat freely with Groq.")
 
-# --- SESSION STATE ---
+# --- SESSION STATE INIT ---
 if "source_text" not in st.session_state:
     st.session_state.source_text = None
 if "doc_id" not in st.session_state:
@@ -20,10 +27,13 @@ if "answer" not in st.session_state:
     st.session_state.answer = None
 if "user_query" not in st.session_state:
     st.session_state.user_query = ""
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = load_chat_history()  # 🧠 Persistent memory
 
 # --- SIDEBAR ---
 st.sidebar.markdown("## ⚙️ Session")
 if st.sidebar.button("🧹 Clear Session"):
+    clear_chat_history()
     st.session_state.clear()
     st.experimental_rerun()
 
@@ -100,26 +110,38 @@ if st.session_state.source_text:
         st.markdown(f"**🆔 Document ID**: `{st.session_state.doc_id}`")
         st.text_area("Source Text", st.session_state.source_text, height=200)
 
-# --- CHAT MODE: Always Active ---
+# --- CHAT MODE ---
 st.markdown("---")
-st.session_state.user_query = st.text_input(
-    "💬 Ask a question (RAG if doc selected, LLM if not)",
-    value=st.session_state.user_query
-)
+user_query = st.text_input("💬 Ask a question (RAG if doc selected, LLM if not)", "")
 
-if st.session_state.user_query:
+if user_query:
     with st.spinner("Thinking with Groq..."):
         try:
-            answer = run_rag_pipeline(
-                user_query=st.session_state.user_query,
+            raw_answer = run_rag_pipeline(
+                user_query=user_query,
                 source_text=st.session_state.source_text,
                 doc_id=st.session_state.doc_id
             )
+            # ✅ Ensure clean output
+            answer = getattr(raw_answer, "content", str(raw_answer)).strip()
         except Exception as e:
             answer = f"❌ Error: {str(e)}"
-        st.session_state.answer = answer
-        st.markdown("### 🧠 Answer")
-        st.success(answer)
+
+        # ✅ Show output only — no history, no save
+        if answer:
+            st.markdown("### 🤖 Answer")
+            st.success(answer)
+
+
+
+# # --- DISPLAY CHAT HISTORY ---
+# if st.session_state.chat_history:
+#     st.markdown("### 🗂️ Chat History")
+#     for i, chat in enumerate(reversed(st.session_state.chat_history[-5:]), 1):
+#         with st.expander(f"🔹 Q{i}: {chat['question']}"):
+#             st.markdown(f"**💬 You:** {chat['question']}")
+#             st.markdown(f"**🤖 Answer:** {chat['answer']}")
+
 
 # --- SHOW LAST ANSWER IF RELOADED ---
 elif st.session_state.answer:
